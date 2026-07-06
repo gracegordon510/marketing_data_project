@@ -11,7 +11,7 @@ CREATE TABLE dim_campaigns (
     end_date DATE,
     is_active BIT NOT NULL DEFAULT 1,
     daily_budget DECIMAL(12, 2),
-    created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+    created_at DATETIME2(0) NOT NULL DEFAULT GETDATE(),
 
     CONSTRAINT pk_dim_campaigns 
         PRIMARY KEY (campaign_id),
@@ -34,8 +34,8 @@ CREATE TABLE dim_customers (
     customer_segment VARCHAR(50),
     age_group VARCHAR(50),
     country VARCHAR(50),
-    signup_date DATETIME2,
-    create_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+    signup_date DATETIME2(0),
+    created_at DATETIME2(0) NOT NULL DEFAULT GETDATE(),
 
     CONSTRAINT pk_dim_customers 
         PRIMARY KEY (customer_id),

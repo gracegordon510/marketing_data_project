@@ -7,8 +7,8 @@ CREATE INDEX ix_fact_impression_events_campaign_id
     ON dbo.fact_impression_events (campaign_id);
 GO
 
-CREATE INDEX ix_fact_impression_events_user_id
-    ON dbo.fact_impression_events (user_id);
+CREATE INDEX ix_fact_impression_events_customer_id
+    ON dbo.fact_impression_events (customer_id);
 GO
 
 CREATE INDEX ix_fact_impression_events_shown_at
@@ -21,8 +21,8 @@ CREATE INDEX ix_fact_click_events_campaign_id
     ON dbo.fact_click_events (campaign_id);
 GO
 
-CREATE INDEX ix_fact_click_events_user_id
-    ON dbo.fact_click_events (user_id);
+CREATE INDEX ix_fact_click_events_customer_id
+    ON dbo.fact_click_events (customer_id);
 GO
 
 CREATE INDEX ix_fact_click_events_clicked_at
@@ -35,8 +35,8 @@ CREATE INDEX ix_fact_lead_events_campaign_id
     ON dbo.fact_lead_events (campaign_id);
 GO
 
-CREATE INDEX ix_fact_lead_events_user_id
-    ON dbo.fact_lead_events (user_id);
+CREATE INDEX ix_fact_lead_events_customer_id
+    ON dbo.fact_lead_events (customer_id);
 GO
 
 CREATE INDEX ix_fact_lead_events_lead_created_at
@@ -49,8 +49,8 @@ CREATE INDEX ix_fact_conversion_events_campaign_id
     ON dbo.fact_conversion_events (campaign_id);
 GO
 
-CREATE INDEX ix_fact_conversion_events_user_id
-    ON dbo.fact_conversion_events (user_id);
+CREATE INDEX ix_fact_conversion_events_customer_id
+    ON dbo.fact_conversion_events (customer_id);
 GO
 
 CREATE INDEX ix_fact_conversion_events_converted_at
@@ -80,7 +80,7 @@ GO
 
 
 -- dim_customers
--- user_id PK index already exists
+-- customer_id PK index already exists
 -- email UNIQUE index already exists
 
 CREATE INDEX ix_dim_customers_customer_segment
