@@ -1,1 +1,0 @@
-print("marketing data project")
