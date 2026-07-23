@@ -70,6 +70,8 @@ def transform_events(df: pd.DataFrame) -> pd.DataFrame:
 
     events["timestamp"] = pd.to_datetime(events["timestamp"], errors="coerce")
 
+    events.rename(columns={"timestamp": "event_timestamp"}, inplace=True)
+
     events["traffic_source"] = events["traffic_source"].str.strip().str.title()
 
     events["event_type"] = events["event_type"].str.strip().str.lower()
@@ -93,6 +95,11 @@ def transform_transactions(df: pd.DataFrame) -> pd.DataFrame:
 
     transactions["timestamp"] = pd.to_datetime(
         transactions["timestamp"], errors="coerce"
+    )
+
+    transactions.rename(
+    columns={"timestamp": "transaction_timestamp"},
+    inplace=True,
     )
 
     transactions["quantity"] = pd.to_numeric(

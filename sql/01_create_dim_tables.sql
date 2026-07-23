@@ -26,7 +26,7 @@ BEGIN
             PRIMARY KEY CLUSTERED (customer_id),
 
         CONSTRAINT ck_dim_customers_age
-            CHECK (age BETWEEN 18 AND 70),
+            CHECK (age BETWEEN 0 AND 120),
 
         CONSTRAINT ck_dim_customers_gender
             CHECK (

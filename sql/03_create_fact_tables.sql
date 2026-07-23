@@ -1,99 +1,147 @@
-DROP TABLE IF EXISTS dbo.fact_impression_events;
-CREATE TABLE dbo.fact_impression_events (
-    impression_id BIGINT IDENTITY(1,1) NOT NULL,
-    campaign_id BIGINT NOT NULL,
-    customer_id BIGINT NOT NULL,
-    shown_at DATETIME2(0) NOT NULL,
-    device VARCHAR(50) NULL,
-    location VARCHAR(50) NULL,
-    browser VARCHAR(50) NULL,
-    session_id VARCHAR(100) NULL,
+/*==============================================================================
+    File: 03_create_fact_tables.sql
+    Purpose: Create fact tables for marketing events and transactions.
+==============================================================================*/
 
-    CONSTRAINT pk_fact_impression_events
-        PRIMARY KEY (impression_id),
-
-    CONSTRAINT fk_fact_impression_events_campaign
-        FOREIGN KEY (campaign_id)
-        REFERENCES dbo.dim_campaigns (campaign_id),
-
-    CONSTRAINT fk_fact_impression_events_customer
-        FOREIGN KEY (customer_id)
-        REFERENCES dbo.dim_customers (customer_id)
-);
+USE marketing_analytics;
 GO
 
-DROP TABLE IF EXISTS dbo.fact_click_events;
-CREATE TABLE dbo.fact_click_events (
-    click_id BIGINT IDENTITY(1,1) NOT NULL,
-    campaign_id BIGINT NOT NULL,
-    customer_id BIGINT NOT NULL,
-    clicked_at DATETIME2(0) NOT NULL,
-    device VARCHAR(50) NULL,
-    location VARCHAR(50) NULL,
-    browser VARCHAR(50) NULL,
-    session_id VARCHAR(100) NULL,
-    cost_per_click DECIMAL(10,2) NULL,
+/*==============================================================================
+    FACT_EVENTS
+==============================================================================*/
 
-    CONSTRAINT pk_fact_click_events
-        PRIMARY KEY (click_id),
+IF OBJECT_ID('dbo.fact_events', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.fact_events
+    (
+        event_id               BIGINT          NOT NULL,
+        event_timestamp        DATETIME2(0)    NOT NULL,
+        event_type             VARCHAR(30)     NOT NULL,
+        customer_id            INT             NOT NULL,
+        product_id             INT             NULL,
+        campaign_id            INT             NOT NULL,
+        session_id             VARCHAR(100)    NULL,
+        device_type            VARCHAR(20)     NULL,
+        traffic_source         VARCHAR(30)     NOT NULL,
+        page_category          VARCHAR(30)     NOT NULL,
+        session_duration_sec   DECIMAL(12, 2)  NULL,
+        experiment_group       VARCHAR(30)     NOT NULL,
 
-    CONSTRAINT fk_fact_click_events_campaign
-        FOREIGN KEY (campaign_id)
-        REFERENCES dbo.dim_campaigns (campaign_id),
+        CONSTRAINT pk_fact_events
+            PRIMARY KEY CLUSTERED (event_id),
 
-    CONSTRAINT fk_fact_click_events_customer
-        FOREIGN KEY (customer_id)
-        REFERENCES dbo.dim_customers (customer_id),
+        CONSTRAINT fk_fact_events_customer
+            FOREIGN KEY (customer_id)
+            REFERENCES dbo.dim_customers (customer_id),
 
-    CONSTRAINT ck_fact_click_events_cost_per_click
-        CHECK (cost_per_click IS NULL OR cost_per_click >= 0)
-);
+        CONSTRAINT fk_fact_events_product
+            FOREIGN KEY (product_id)
+            REFERENCES dbo.dim_products (product_id),
+
+        CONSTRAINT fk_fact_events_campaign
+            FOREIGN KEY (campaign_id)
+            REFERENCES dbo.dim_campaigns (campaign_id),
+
+        CONSTRAINT ck_fact_events_event_type
+            CHECK (
+                event_type IN (
+                    'View',
+                    'Click',
+                    'Add to Cart',
+                    'Bounce',
+                    'Purchase'
+                )
+            ),
+
+        CONSTRAINT ck_fact_events_device_type
+            CHECK (
+                device_type IS NULL
+                OR device_type IN (
+                    'Desktop',
+                    'Mobile',
+                    'Tablet'
+                )
+            ),
+
+        CONSTRAINT ck_fact_events_traffic_source
+            CHECK (
+                traffic_source IN (
+                    'Email',
+                    'Organic',
+                    'Paid Search',
+                    'Social',
+                    'Direct'
+                )
+            ),
+
+        CONSTRAINT ck_fact_events_page_category
+            CHECK (
+                page_category IN (
+                    'PLP',
+                    'PDP',
+                    'Checkout',
+                    'Home',
+                    'Cart'
+                )
+            ),
+
+        CONSTRAINT ck_fact_events_session_duration
+            CHECK (
+                session_duration_sec IS NULL
+                OR session_duration_sec >= 0
+            ),
+
+        CONSTRAINT ck_fact_events_experiment_group
+            CHECK (
+                experiment_group IN (
+                    'Control',
+                    'Variant_A',
+                    'Variant_B'
+                )
+            )
+    );
+END;
 GO
 
-DROP TABLE IF EXISTS dbo.fact_lead_events;
-CREATE TABLE dbo.fact_lead_events (
-    lead_id BIGINT IDENTITY(1,1) NOT NULL,
-    campaign_id BIGINT NOT NULL,
-    customer_id BIGINT NOT NULL,
-    lead_created_at DATETIME2(0) NOT NULL,
-    lead_source VARCHAR(50) NULL,
-    contact_method VARCHAR(50) NULL,
 
-    CONSTRAINT pk_fact_lead_events
-        PRIMARY KEY (lead_id),
+/*==============================================================================
+    FACT_TRANSACTIONS
+==============================================================================*/
 
-    CONSTRAINT fk_fact_lead_events_campaign
-        FOREIGN KEY (campaign_id)
-        REFERENCES dbo.dim_campaigns (campaign_id),
+IF OBJECT_ID('dbo.fact_transactions', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.fact_transactions
+    (
+        transaction_id        BIGINT          NOT NULL,
+        transaction_timestamp DATETIME2(0)    NOT NULL,
+        customer_id           INT             NOT NULL,
+        product_id            INT             NOT NULL,
+        campaign_id           INT             NOT NULL,
+        quantity              SMALLINT        NOT NULL,
+        gross_revenue         DECIMAL(14, 2)  NOT NULL,
+        discount_pct          DECIMAL(6, 4)   NOT NULL,
+        refund_flag           BIT             NOT NULL,
 
-    CONSTRAINT fk_fact_lead_events_customer
-        FOREIGN KEY (customer_id)
-        REFERENCES dbo.dim_customers (customer_id)
-);
-GO
+        CONSTRAINT pk_fact_transactions
+            PRIMARY KEY CLUSTERED (transaction_id),
 
-DROP TABLE IF EXISTS dbo.fact_conversion_events;
-CREATE TABLE dbo.fact_conversion_events (
-    conversion_id BIGINT IDENTITY(1,1) NOT NULL,
-    campaign_id BIGINT NOT NULL,
-    customer_id BIGINT NOT NULL,
-    converted_at DATETIME2(0) NOT NULL,
-    revenue DECIMAL(12,2) NOT NULL,
-    product_type VARCHAR(50) NULL,
-    payment_type VARCHAR(50) NULL,
+        CONSTRAINT fk_fact_transactions_customer
+            FOREIGN KEY (customer_id)
+            REFERENCES dbo.dim_customers (customer_id),
 
-    CONSTRAINT pk_fact_conversion_events 
-        PRIMARY KEY (conversion_id),
+        CONSTRAINT fk_fact_transactions_product
+            FOREIGN KEY (product_id)
+            REFERENCES dbo.dim_products (product_id),
 
-    CONSTRAINT fk_fact_conversion_events_campaign
-        FOREIGN KEY (campaign_id)
-        REFERENCES dbo.dim_campaigns (campaign_id),
+        CONSTRAINT fk_fact_transactions_campaign
+            FOREIGN KEY (campaign_id)
+            REFERENCES dbo.dim_campaigns (campaign_id),
 
-    CONSTRAINT fk_fact_conversion_events_customer
-        FOREIGN KEY (customer_id)
-        REFERENCES dbo.dim_customers (customer_id),
+        CONSTRAINT ck_fact_transactions_quantity
+            CHECK (quantity >= 1),
 
-    CONSTRAINT ck_fact_conversion_events_revenue
-        CHECK (revenue >= 0)
-);
+        CONSTRAINT ck_fact_transactions_discount_pct
+            CHECK (discount_pct BETWEEN 0 AND 1)
+    );
+END;
 GO

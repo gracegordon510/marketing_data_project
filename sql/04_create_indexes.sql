@@ -1,96 +1,140 @@
-/*
-  FACT TABLE INDEXES
-*/
+/*==============================================================================
+    File: 04_create_indexes.sql
+    Purpose: Create indexes for joins, filters, and dashboard queries.
+==============================================================================*/
 
--- Fact Impressions
-CREATE INDEX ix_fact_impression_events_campaign_id
-    ON dbo.fact_impression_events (campaign_id);
+USE marketing_analytics;
 GO
 
-CREATE INDEX ix_fact_impression_events_customer_id
-    ON dbo.fact_impression_events (customer_id);
-GO
+/*==============================================================================
+    FACT_EVENTS INDEXES
+==============================================================================*/
 
-CREATE INDEX ix_fact_impression_events_shown_at
-    ON dbo.fact_impression_events (shown_at);
-GO
-
-
--- Fact Clicks
-CREATE INDEX ix_fact_click_events_campaign_id
-    ON dbo.fact_click_events (campaign_id);
-GO
-
-CREATE INDEX ix_fact_click_events_customer_id
-    ON dbo.fact_click_events (customer_id);
-GO
-
-CREATE INDEX ix_fact_click_events_clicked_at
-    ON dbo.fact_click_events (clicked_at);
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'ix_fact_events_customer_id'
+      AND object_id = OBJECT_ID('dbo.fact_events')
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX ix_fact_events_customer_id
+        ON dbo.fact_events (customer_id);
+END;
 GO
 
 
--- Fact Leads
-CREATE INDEX ix_fact_lead_events_campaign_id
-    ON dbo.fact_lead_events (campaign_id);
-GO
-
-CREATE INDEX ix_fact_lead_events_customer_id
-    ON dbo.fact_lead_events (customer_id);
-GO
-
-CREATE INDEX ix_fact_lead_events_lead_created_at
-    ON dbo.fact_lead_events (lead_created_at);
-GO
-
-
--- Fact Conversions
-CREATE INDEX ix_fact_conversion_events_campaign_id
-    ON dbo.fact_conversion_events (campaign_id);
-GO
-
-CREATE INDEX ix_fact_conversion_events_customer_id
-    ON dbo.fact_conversion_events (customer_id);
-GO
-
-CREATE INDEX ix_fact_conversion_events_converted_at
-    ON dbo.fact_conversion_events (converted_at);
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'ix_fact_events_product_id'
+      AND object_id = OBJECT_ID('dbo.fact_events')
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX ix_fact_events_product_id
+        ON dbo.fact_events (product_id);
+END;
 GO
 
 
-/*
-  DIMENSION TABLE INDEXES
-*/
-
--- dim_campaigns
--- campaign_id PK index already exists
--- campaign_code UNIQUE index already exists
-
-CREATE INDEX ix_dim_campaigns_campaign_type
-    ON dbo.dim_campaigns (campaign_type);
-GO
-
-CREATE INDEX ix_dim_campaigns_channel_used
-    ON dbo.dim_campaigns (channel_used);
-GO
-
-CREATE INDEX ix_dim_campaigns_is_active
-    ON dbo.dim_campaigns (is_active);
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'ix_fact_events_campaign_id'
+      AND object_id = OBJECT_ID('dbo.fact_events')
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX ix_fact_events_campaign_id
+        ON dbo.fact_events (campaign_id);
+END;
 GO
 
 
--- dim_customers
--- customer_id PK index already exists
--- email UNIQUE index already exists
-
-CREATE INDEX ix_dim_customers_customer_segment
-    ON dbo.dim_customers (customer_segment);
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'ix_fact_events_timestamp'
+      AND object_id = OBJECT_ID('dbo.fact_events')
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX ix_fact_events_timestamp
+        ON dbo.fact_events (event_timestamp);
+END;
 GO
 
-CREATE INDEX ix_dim_customers_country
-    ON dbo.dim_customers (country);
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'ix_fact_events_event_type'
+      AND object_id = OBJECT_ID('dbo.fact_events')
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX ix_fact_events_event_type
+        ON dbo.fact_events (event_type);
+END;
 GO
 
-CREATE INDEX ix_dim_customers_signup_date
-    ON dbo.dim_customers (signup_date);
+
+/*==============================================================================
+    FACT_TRANSACTIONS INDEXES
+==============================================================================*/
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'ix_fact_transactions_customer_id'
+      AND object_id = OBJECT_ID('dbo.fact_transactions')
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX ix_fact_transactions_customer_id
+        ON dbo.fact_transactions (customer_id);
+END;
+GO
+
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'ix_fact_transactions_product_id'
+      AND object_id = OBJECT_ID('dbo.fact_transactions')
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX ix_fact_transactions_product_id
+        ON dbo.fact_transactions (product_id);
+END;
+GO
+
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'ix_fact_transactions_campaign_id'
+      AND object_id = OBJECT_ID('dbo.fact_transactions')
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX ix_fact_transactions_campaign_id
+        ON dbo.fact_transactions (campaign_id);
+END;
+GO
+
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'ix_fact_transactions_timestamp'
+      AND object_id = OBJECT_ID('dbo.fact_transactions')
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX ix_fact_transactions_timestamp
+        ON dbo.fact_transactions (transaction_timestamp);
+END;
 GO
