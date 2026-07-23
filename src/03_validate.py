@@ -215,7 +215,7 @@ def validate_customers(
         "age",
         "customers",
         minimum=0,
-        maximum=150,
+        maximum=120,
     )
 
     validate_allowed_values(
