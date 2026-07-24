@@ -3,7 +3,7 @@ from urllib.parse import quote_plus
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 
-from config import SQL_DATABASE, SQL_DRIVER, SQL_SERVER
+from src.config import SQL_DATABASE, SQL_DRIVER, SQL_SERVER
 
 
 def create_database_engine() -> Engine:
@@ -23,5 +23,3 @@ def create_database_engine() -> Engine:
     return create_engine(
         f"mssql+pyodbc:///?odbc_connect={encoded_connection_string}"
     )
-
-

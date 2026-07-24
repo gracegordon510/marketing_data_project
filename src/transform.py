@@ -76,7 +76,7 @@ def transform_events(df: pd.DataFrame) -> pd.DataFrame:
 
     events["event_type"] = events["event_type"].str.strip().str.lower()
 
-    events["device_type"] = events["device_type"].str.strip().str.lower()
+    events["device_type"] = events["device_type"].str.strip().str.title()
 
     events["page_category"] = events["page_category"].str.strip().str.upper()
 

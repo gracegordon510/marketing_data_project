@@ -297,7 +297,7 @@ def validate_products(
             "Fashion",
             "Home",
             "Grocery",
-            "Sport",
+            "Sports",
             "Beauty",
         },
         "products",
@@ -373,7 +373,7 @@ def validate_events(
 
     required_columns = [
         "event_id",
-        "timestamp",
+        "event_timestamp",
         "customer_id",
         "product_id",
         "campaign_id",
@@ -402,7 +402,7 @@ def validate_events(
         events,
         [
             "event_id",
-            "timestamp",
+            "event_timestamp",
             "customer_id",
             "campaign_id",
             "event_type",
@@ -417,7 +417,7 @@ def validate_events(
 
     validate_datetime(
         events,
-        "timestamp",
+        "event_timestamp",
         "events",
     )
 
@@ -444,7 +444,7 @@ def validate_events(
     validate_allowed_values(
         events,
         "device_type",
-        {"desktop", "mobile", "tablet"},
+        {"Desktop", "Mobile", "Tablet"},
         "events",
         allow_null=True,
     )
@@ -501,7 +501,7 @@ def validate_transactions(
 
     required_columns = [
         "transaction_id",
-        "timestamp",
+        "transaction_timestamp",
         "customer_id",
         "product_id",
         "quantity",
@@ -531,7 +531,7 @@ def validate_transactions(
 
     validate_datetime(
         transactions,
-        "timestamp",
+        "transaction_timestamp",
         "transactions",
     )
 
@@ -595,6 +595,7 @@ def report_campaign_timing_issues(
     facts: pd.DataFrame,
     campaigns: pd.DataFrame,
     table_name: str,
+    timestamp_column: str,
 ) -> None:
     """
     Log the percentage of campaign-linked rows outside campaign dates.
@@ -617,8 +618,8 @@ def report_campaign_timing_issues(
         how="left",
     )
 
-    outside_campaign = (merged["timestamp"] < merged["start_date"]) | (
-        merged["timestamp"] > merged["end_date"]
+    outside_campaign = (merged[timestamp_column] < merged["start_date"]) | (
+        merged[timestamp_column] > merged["end_date"]
     )
 
     invalid_count = outside_campaign.sum()
@@ -691,12 +692,14 @@ def validate_all(
         events,
         campaigns,
         "events",
+        "event_timestamp"
     )
 
     report_campaign_timing_issues(
         transactions,
         campaigns,
         "transactions",
+        "transaction_timestamp"
     )
 
     logger.info("All hard validations passed.")

@@ -87,7 +87,7 @@ BEGIN
                     'Fashion',
                     'Home',
                     'Grocery',
-                    'Sport',
+                    'Sports',
                     'Beauty'
                 )
             ),

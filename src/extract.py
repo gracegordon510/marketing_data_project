@@ -37,8 +37,6 @@ def extract_all() -> dict[str, pd.DataFrame]:
     }
 
 
-print(RAW_DATA_DIR)
-print(RAW_DATA_DIR.exists())
 
 if __name__ == "__main__":
     tables = extract_all()
