@@ -118,7 +118,8 @@ BEGIN
         product_id            INT             NOT NULL,
         campaign_id           INT             NOT NULL,
         quantity              SMALLINT        NOT NULL,
-        gross_revenue         DECIMAL(14, 2)  NOT NULL,
+        transaction_amount    DECIMAL(14, 2)  NOT NULL,
+        gross_revenue         DECIMAL(14,2)   NOT NULL,
         discount_applied      DECIMAL(6, 4)   NOT NULL,
         refund_flag           BIT             NOT NULL,
 
@@ -139,6 +140,9 @@ BEGIN
 
         CONSTRAINT ck_fact_transactions_quantity
             CHECK (quantity >= 1),
+
+        CONSTRAINT ck_fact_transactions_gross_revenue_positive
+            CHECK (gross_revenue > 0),
 
         CONSTRAINT ck_fact_transactions_discount_applied
             CHECK (discount_applied BETWEEN 0 AND 1)

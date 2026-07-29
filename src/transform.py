@@ -90,16 +90,21 @@ def transform_events(df: pd.DataFrame) -> pd.DataFrame:
     return events
 
 
-def transform_transactions(df: pd.DataFrame) -> pd.DataFrame:
-    transactions = df.copy()
-
-    transactions["timestamp"] = pd.to_datetime(
-        transactions["timestamp"], errors="coerce"
-    )
+def transform_transactions(
+    df_transactions: pd.DataFrame, df_products: pd.DataFrame
+) -> pd.DataFrame:
+    transactions = df_transactions.copy()
+    products = df_products.copy()
 
     transactions.rename(
-    columns={"timestamp": "transaction_timestamp"},
-    inplace=True,
+        columns={"timestamp": "transaction_timestamp"},
+        inplace=True,
+    )
+
+    transactions = transactions.rename(columns={"gross_revenue": "transaction_amount"})
+
+    transactions["transaction_timestamp"] = pd.to_datetime(
+        transactions["transaction_timestamp"], errors="coerce"
     )
 
     transactions["quantity"] = pd.to_numeric(
@@ -110,8 +115,8 @@ def transform_transactions(df: pd.DataFrame) -> pd.DataFrame:
         transactions["discount_applied"], errors="coerce"
     )
 
-    transactions["gross_revenue"] = pd.to_numeric(
-        transactions["gross_revenue"], errors="coerce"
+    transactions["transaction_amount"] = pd.to_numeric(
+        transactions["transaction_amount"], errors="coerce"
     )
 
     transactions["refund_flag"] = transactions["refund_flag"].astype("boolean")
@@ -122,7 +127,7 @@ def transform_transactions(df: pd.DataFrame) -> pd.DataFrame:
     transactions["campaign_id"] = transactions["campaign_id"].astype("Int64")
 
     unusable_rows = (
-        transactions["product_id"].isna() & transactions["gross_revenue"].isna()
+        transactions["product_id"].isna() & transactions["transaction_amount"].isna()
     )
 
     removed_count = unusable_rows.sum()
@@ -132,13 +137,29 @@ def transform_transactions(df: pd.DataFrame) -> pd.DataFrame:
     print(f"Removed {removed_count:,} unusable transaction rows")
 
     invalid_rows = transactions[
-        transactions["product_id"].isna() & transactions["gross_revenue"].isna()
+        transactions["product_id"].isna() & transactions["transaction_amount"].isna()
     ]
 
     if not invalid_rows.empty:
         raise ValueError(
             "Transactions still contain unusable rows after transformation."
         )
+
+    # Add product price temporarily
+    transactions = transactions.merge(
+        products[["product_id", "base_price"]],
+        on="product_id",
+        how="left",
+        validate="many_to_one",
+    )
+
+    # Original value before discounts and refunds
+    transactions["gross_revenue"] = (
+        transactions["quantity"] * transactions["base_price"]
+    ).round(2)
+
+    # Price is already stored in dim_products
+    transactions = transactions.drop(columns=["base_price"])
 
     return transactions
 
@@ -149,5 +170,7 @@ def transform_all(tables: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
         "products": transform_products(tables["products"]),
         "campaigns": transform_campaigns(tables["campaigns"]),
         "events": transform_events(tables["events"]),
-        "transactions": transform_transactions(tables["transactions"]),
+        "transactions": transform_transactions(
+            tables["transactions"], tables["products"]
+        ),
     }

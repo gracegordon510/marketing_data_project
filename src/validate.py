@@ -506,6 +506,7 @@ def validate_transactions(
         "product_id",
         "quantity",
         "discount_applied",
+        "transaction_amount",
         "gross_revenue",
         "campaign_id",
         "refund_flag",
@@ -548,6 +549,13 @@ def validate_transactions(
         "transactions",
         minimum=0,
         maximum=1,
+    )
+
+    validate_numeric_range(
+        transactions,
+        "gross_revenue",
+        "transactions",
+        minimum=0.01,
     )
 
     validate_allowed_values(
@@ -688,18 +696,10 @@ def validate_all(
         campaigns,
     )
 
-    report_campaign_timing_issues(
-        events,
-        campaigns,
-        "events",
-        "event_timestamp"
-    )
+    report_campaign_timing_issues(events, campaigns, "events", "event_timestamp")
 
     report_campaign_timing_issues(
-        transactions,
-        campaigns,
-        "transactions",
-        "transaction_timestamp"
+        transactions, campaigns, "transactions", "transaction_timestamp"
     )
 
     logger.info("All hard validations passed.")
