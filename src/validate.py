@@ -1,10 +1,8 @@
 import logging
-
 import pandas as pd
-
 from typing import Any
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("marketing_etl")
 
 
 # ---------------------------------------------------------
@@ -145,7 +143,13 @@ def validate_foreign_key(
     allow_null: bool = False,
     extra_valid_values: set[Any] | None = None,
 ) -> None:
-    """Check that foreign-key values exist in the parent table."""
+    """
+    Check that foreign-key values exist in the parent DataFrame.
+
+    extra_valid_values can be used for warehouse-defined surrogate/default
+    values that are inserted directly into SQL and are not present in the
+    source dimension DataFrame.
+    """
 
     child_values = child_df[child_column]
 
@@ -481,6 +485,8 @@ def validate_events(
         allow_null=True,
     )
 
+    # campaign_id = 0 represents unattributed activity and is inserted
+    # directly into dim_campaigns during database setup.
     validate_foreign_key(
         events,
         "campaign_id",
@@ -582,7 +588,9 @@ def validate_transactions(
         "transactions",
         "products",
     )
-
+    
+    # campaign_id = 0 represents unattributed activity and is inserted
+    # directly into dim_campaigns during database setup.
     validate_foreign_key(
         transactions,
         "campaign_id",
@@ -636,8 +644,10 @@ def report_campaign_timing_issues(
     percentage = invalid_count / total_count * 100 if total_count > 0 else 0
 
     logger.warning(
-        "%s: %.2f%% of campaign-linked rows fall outside " "the campaign date range.",
+        "%s: %s of %s campaign-linked rows (%.2f%%) fall outside the campaign date range.",
         table_name,
+        f"{invalid_count:,}",
+        f"{total_count:,}",
         percentage,
     )
 
@@ -671,35 +681,48 @@ def validate_all(
     events = tables["events"]
     transactions = tables["transactions"]
 
-    logger.info("Validating customers.")
+    logger.info("Validating customers...")
     validate_customers(customers)
+    logger.info("Customers validation passed.")
 
-    logger.info("Validating products.")
+    logger.info("Validating products...")
     validate_products(products)
+    logger.info("Products validation passed.")
 
-    logger.info("Validating campaigns.")
+    logger.info("Validating campaigns...")
     validate_campaigns(campaigns)
+    logger.info("Campaigns validation passed.")
 
-    logger.info("Validating events.")
+    logger.info("Validating events...")
     validate_events(
         events,
         customers,
         products,
         campaigns,
     )
+    logger.info("Events validation passed.")
 
-    logger.info("Validating transactions.")
+    logger.info("Validating transactions...")
     validate_transactions(
         transactions,
         customers,
         products,
         campaigns,
     )
-
-    report_campaign_timing_issues(events, campaigns, "events", "event_timestamp")
+    logger.info("Transactions validation passed.")
 
     report_campaign_timing_issues(
-        transactions, campaigns, "transactions", "transaction_timestamp"
+        events,
+        campaigns,
+        "events",
+        "event_timestamp",
+    )
+
+    report_campaign_timing_issues(
+        transactions,
+        campaigns,
+        "transactions",
+        "transaction_timestamp",
     )
 
     logger.info("All hard validations passed.")

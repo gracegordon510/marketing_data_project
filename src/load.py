@@ -1,7 +1,12 @@
 """Load transformed DataFrames into SQL Server."""
 
+import logging
+from time import perf_counter
+
 import pandas as pd
 from sqlalchemy.engine import Engine
+
+logger = logging.getLogger("marketing_etl")
 
 
 def load_dataframe(
@@ -12,6 +17,15 @@ def load_dataframe(
 ) -> None:
     """Append a DataFrame to an existing SQL Server table."""
 
+    row_count = len(dataframe)
+    start_time = perf_counter()
+
+    logger.info(
+        "Loading %s rows into %s...",
+        f"{row_count:,}",
+        table_name,
+    )
+
     dataframe.to_sql(
         name=table_name,
         con=engine,
@@ -20,6 +34,16 @@ def load_dataframe(
         index=False,
         chunksize=chunksize,
     )
+
+    elapsed_time = perf_counter() - start_time
+
+    logger.info(
+        "Loaded %s rows into %s successfully in %.2f seconds.",
+        f"{row_count:,}",
+        table_name,
+        elapsed_time,
+    )
+
 
 def load_all(
     tables: dict[str, pd.DataFrame],

@@ -1,8 +1,10 @@
-from pathlib import Path
+"""Extract csv files."""
 
+from src.config import PROJECT_ROOT
 import pandas as pd
+import logging
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+logger = logging.getLogger("marketing_etl")
 
 RAW_DATA_DIR = PROJECT_ROOT / "data" / "raw"
 
@@ -28,7 +30,7 @@ def extract_transactions() -> pd.DataFrame:
 
 
 def extract_all() -> dict[str, pd.DataFrame]:
-    return {
+    tables = {
         "customers": extract_customers(),
         "products": extract_products(),
         "campaigns": extract_campaigns(),
@@ -36,10 +38,12 @@ def extract_all() -> dict[str, pd.DataFrame]:
         "transactions": extract_transactions(),
     }
 
+    for table_name, df in tables.items():
+        logger.info(
+            "Extracted %s: %s rows, %s columns.",
+            table_name,
+            f"{len(df):,}",
+            len(df.columns),
+        )
 
-
-if __name__ == "__main__":
-    tables = extract_all()
-
-    for table_name, dataframe in tables.items():
-        print(table_name, dataframe.shape)
+    return tables

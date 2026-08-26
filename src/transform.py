@@ -1,4 +1,7 @@
+import logging
 import pandas as pd
+
+logger = logging.getLogger("marketing_etl")
 
 
 def transform_customers(df: pd.DataFrame) -> pd.DataFrame:
@@ -131,19 +134,19 @@ def transform_transactions(
     )
 
     removed_count = unusable_rows.sum()
+    original_count = len(transactions)
+
+    removed_percentage = (
+        removed_count / original_count * 100 if original_count > 0 else 0
+    )
 
     transactions = transactions.loc[~unusable_rows].copy()
 
-    print(f"Removed {removed_count:,} unusable transaction rows")
-
-    invalid_rows = transactions[
-        transactions["product_id"].isna() & transactions["transaction_amount"].isna()
-    ]
-
-    if not invalid_rows.empty:
-        raise ValueError(
-            "Transactions still contain unusable rows after transformation."
-        )
+    logger.info(
+        "Removed %s unusable transaction rows (%.2f%% of source transactions).",
+        f"{removed_count:,}",
+        removed_percentage,
+    )
 
     # Add product price temporarily
     transactions = transactions.merge(
@@ -165,12 +168,24 @@ def transform_transactions(
 
 
 def transform_all(tables: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
-    return {
+
+    transformed_tables = {
         "customers": transform_customers(tables["customers"]),
         "products": transform_products(tables["products"]),
         "campaigns": transform_campaigns(tables["campaigns"]),
         "events": transform_events(tables["events"]),
         "transactions": transform_transactions(
-            tables["transactions"], tables["products"]
+            tables["transactions"],
+            tables["products"],
         ),
     }
+
+    for table_name, df in transformed_tables.items():
+        logger.info(
+            "Transformed %s: %s rows, %s columns.",
+            table_name,
+            f"{len(df):,}",
+            len(df.columns),
+        )
+
+    return transformed_tables

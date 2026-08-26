@@ -1,6 +1,6 @@
 from urllib.parse import quote_plus
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 
 from src.config import SQL_DATABASE, SQL_DRIVER, SQL_SERVER
@@ -20,6 +20,11 @@ def create_database_engine() -> Engine:
 
     encoded_connection_string = quote_plus(odbc_connection_string)
 
-    return create_engine(
-        f"mssql+pyodbc:///?odbc_connect={encoded_connection_string}"
-    )
+    return create_engine(f"mssql+pyodbc:///?odbc_connect={encoded_connection_string}")
+
+
+def test_database_connection(engine: Engine) -> None:
+    """Verify that a connection to SQL Server can be established."""
+
+    with engine.connect() as connection:
+        connection.execute(text("SELECT 1"))

@@ -21,3 +21,6 @@ data/processed/
 
 # Jupyter
 .ipynb_checkpoints/
+
+# ETL logs
+logs/

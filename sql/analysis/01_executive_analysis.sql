@@ -115,7 +115,7 @@ GROUP BY YEAR(transaction_timestamp)
 ORDER BY transaction_year;
 
 /* =========================================================
-   5. MONTHLY PERFORMANCE
+   4. MONTHLY PERFORMANCE
    ========================================================= */
 
 WITH monthly_performance AS (
@@ -203,7 +203,7 @@ FROM monthly_performance
 ORDER BY transaction_month;
 
 /* =========================================================
-   6. PERFORMANCE BY CALENDAR MONTH
+   5. PERFORMANCE BY CALENDAR MONTH
    ========================================================= */
 
 SELECT
