@@ -90,6 +90,19 @@ def transform_events(df: pd.DataFrame) -> pd.DataFrame:
     events["product_id"] = events["product_id"].astype("Int64")
     events["campaign_id"] = events["campaign_id"].astype("Int64")
 
+    invalid_purchase_events = (
+        events["event_type"].eq("purchase") & events["product_id"].isna()
+    )
+
+    removed_purchase_event_count = invalid_purchase_events.sum()
+
+    events = events.loc[~invalid_purchase_events].copy()
+
+    logger.info(
+        "Removed %s purchase events with missing product_id.",
+        f"{removed_purchase_event_count:,}",
+    )
+
     return events
 
 
@@ -130,7 +143,7 @@ def transform_transactions(
     transactions["campaign_id"] = transactions["campaign_id"].astype("Int64")
 
     unusable_rows = (
-        transactions["product_id"].isna() & transactions["transaction_amount"].isna()
+        transactions["product_id"].isna() | transactions["transaction_amount"].isna()
     )
 
     removed_count = unusable_rows.sum()

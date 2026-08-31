@@ -244,6 +244,9 @@ The following event-count ratios may be used as descriptive funnel indicators:
 
 ### Known limitations
 
+### Invalid Rows
+The source contained 10,449 purchase-event rows with a missing product_id. Because purchase events require a valid product ID for reconciliation with transactions and product-level analysis, these rows are removed during ETL. Therefore, the warehouse event count is lower than the raw source count.
+
 #### Session identifiers
 
 - Of 633,462 distinct session IDs, 533,914 (84.29%) were associated with multiple customers.
@@ -331,15 +334,37 @@ These definitions reflect the selected interpretation that refund rows are indep
 | Purchasing customer | Customer with at least one row where `refund_flag = 0` |
 | Repeat customer | Purchasing customer with more than one row where `refund_flag = 0` |
 
-### Known limitations
+### Known Limitations
 
-- Only 18 of 3,029 raw refunded rows could be matched to a separate earlier purchase by the same customer and product during EDA. Under the changed-in-place interpretation, this is expected because the original row was updated rather than preserved as a separate purchase row.
-- The dataset contains only the final recorded transaction state and does not contain transaction-status history.
-- A refunded row can be analyzed using its customer, product, campaign, quantity, and timestamp attributes, but the data does not provide the original purchase state or the date on which the status changed to refunded.
-- Do not calculate time-to-refund, refund-processing time, or purchase-to-refund status transitions because the original purchase timestamp and refund-change timestamp are not separately available.
-- Summing signed `transaction_amount` across all rows answers a different question from the documented `Net revenue` metric. Always apply the stated refund rule.
-- Only approximately 4.87% of campaign-linked source transactions occurred within the associated campaign dates. Do not use campaign dates to validate transaction attribution.
-- The source contained 10,449 transaction rows with both missing `product_id` and missing source revenue. The final fact table requires both product and derived revenue values, so warehouse counts may be lower than raw source counts after ETL filtering.
+#### Refund interpretation
+
+Refund records are assumed to represent transactions whose original purchase rows were updated in place. Only 18 of 3,029 raw refund records could be matched to a separate earlier purchase for the same customer and product, which supports this interpretation. However, the dataset does not provide transaction-status history to confirm it.
+
+#### Missing transaction history
+
+Each transaction row contains only its final recorded state. For refunded transactions, the original purchase state, original purchase timestamp, and date of the refund-status change are unavailable.
+
+Therefore, the data should not be used to calculate:
+
+- Time to refund
+- Refund-processing time
+- Purchase-to-refund status transitions
+
+#### Refund timestamps
+
+Refunded transactions may still be analyzed using their customer, product, campaign, quantity, and recorded timestamp attributes. However, the timestamp should not be interpreted as a confirmed purchase date or refund date.
+
+#### Revenue calculations
+
+The signed `transaction_amount` should not be summed across all rows as the documented net-revenue measure. Revenue calculations must follow the defined treatment of completed and refunded transactions.
+
+#### Campaign timing
+
+Only approximately 4.87% of campaign-linked source transactions occurred within their associated campaign periods. Campaign dates should not be used to validate transaction attribution or evaluate campaign-period performance.
+
+#### Removed transaction rows
+
+The source contained 10,449 transaction rows with both a missing `product_id` and missing source revenue. Because the fact table requires a valid product and the information needed to derive revenue, these unusable rows are removed during ETL. The warehouse transaction count is therefore lower than the raw source count.
 
 ## 7. Indexes
 
