@@ -24,3 +24,9 @@ data/processed/
 
 # ETL logs
 logs/
+
+# Power BI Desktop files
+/dashboard/*.pbix
+
+# Temporary Power BI files
+~$*.pbix
