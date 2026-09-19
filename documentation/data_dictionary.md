@@ -326,7 +326,7 @@ These definitions reflect the selected interpretation that refund rows are indep
 | Refund transaction count | Count of rows where `refund_flag = 1` |
 | Units sold | Sum of `quantity` where `refund_flag = 0` |
 | Units recorded as refunded | Sum of `quantity` where `refund_flag = 1` |
-| Gross sales | Sum of `gross_revenue`|
+| Gross sales | Sum of `gross_revenue` |
 | Net revenue | Sum of `transaction_amount` where `refund_flag = 0` |
 | Discount value | Sum of `gross_revenue - transaction_amount` where `refund_flag = 0` |
 | Refund value | Absolute sum of `transaction_amount` where `refund_flag = 1` |
