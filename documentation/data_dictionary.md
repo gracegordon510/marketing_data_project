@@ -245,6 +245,7 @@ The following event-count ratios may be used as descriptive funnel indicators:
 ### Known limitations
 
 ### Invalid Rows
+
 The source contained 10,449 purchase-event rows with a missing product_id. Because purchase events require a valid product ID for reconciliation with transactions and product-level analysis, these rows are removed during ETL. Therefore, the warehouse event count is lower than the raw source count.
 
 #### Session identifiers
